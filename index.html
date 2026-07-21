@@ -33,50 +33,31 @@
         <input type="number" id="meses" placeholder="Ej: 7">
     </div>
 
-    <div class="form-group">
-        <label for="zona">Zona Geográfica:</label>
-        <select id="zona">
-            <option value="1.00">Zona Central (Factor 1.00)</option>
-            <option value="0.85" selected>Zona Sur (Factor 0.85)</option>
-            <option value="0.75">Zona Austral (Factor 0.75)</option>
-            <option value="0.90">Norte Grande / Chico (Factor 0.90)</option>
-        </select>
-    </div>
-
-    <button onclick="calcularMO()">Calcular Indicadores</button>
-
-    <div class="results" id="resultados" style="display:none;">
-        <h3 style="margin-top: 0; color: #2c3e50;">Resultados del Cálculo</h3>
-        <div class="result-row">
-            <span>MOD (Directa - FTE):</span>
-            <span id="modFte">0.00</span>
-        </div>
-        <div class="result-row">
-            <span>MOI (Indirecta - FTE):</span>
-            <span id="moiFte">0.00</span>
-        </div>
-        <div class="result-row">
-            <span>Esfuerzo MOD (HH):</span>
-            <span id="modHh">0.0</span>
-        </div>
-        <div class="result-row">
-            <span>Esfuerzo MOI (HH):</span>
-            <span id="moiHh">0.0</span>
-        </div>
-        <div class="result-row total">
-            <span>TOTAL PERSONAL (FTE):</span>
-            <span id="totalFte" style="color: #27ae60;">0.00</span>
-        </div>
-        <div class="result-row total">
-            <span>TOTAL ESFUERZO (HH):</span>
-            <span id="totalHh" style="color: #27ae60;">0.0</span>
-        </div>
-    </div>
+   <!-- Reemplace el div del Costo Total por este -->
+<div class="form-group">
+    <label for="costo">Costo Total de Inversión (CLP):</label>
+    <!-- Se remueve el type="number" para permitir el formateo con caracteres como '$' y '.' -->
+    <input type="text" id="costo" placeholder="Ej: $300.000.000">
 </div>
 
 <script>
+    // Nueva función para formatear la entrada como Pesos (CLP) en tiempo real
+    const inputCosto = document.getElementById('costo');
+    inputCosto.addEventListener('input', function(e) {
+        // Eliminar cualquier caracter que no sea un dígito numérico
+        let valorLimpio = e.target.value.replace(/\D/g, "");
+        if (valorLimpio !== "") {
+            // Formatear como moneda chilena y asignarlo nuevamente al input
+            e.target.value = "$" + parseInt(valorLimpio, 10).toLocaleString('es-CL');
+        } else {
+            e.target.value = "";
+        }
+    });
+
     function calcularMO() {
-        const costo = parseFloat(document.getElementById('costo').value);
+        // Limpiar el formato de moneda para realizar las operaciones matemáticas
+        const costoBruto = document.getElementById('costo').value.replace(/\D/g, "");
+        const costo = parseFloat(costoBruto);
         const meses = parseFloat(document.getElementById('meses').value);
         const factorZona = parseFloat(document.getElementById('zona').value);
 
@@ -85,7 +66,7 @@
             return;
         }
 
-        // Fórmulas metodológicas
+        // Fórmulas metodológicas (Mantenemos la rigurosidad matemática del motor)
         const mmPesos = costo / 1000000;
         const fteBase = (mmPesos * 0.4400) / meses;
         const fteAjustado = fteBase / factorZona;
@@ -97,7 +78,7 @@
         const modHh = modFte * meses * horasMes;
         const moiHh = moiFte * meses * horasMes;
 
-        // Mostrar resultados
+        // Mostrar resultados en la interfaz
         document.getElementById('modFte').textContent = modFte.toFixed(2);
         document.getElementById('moiFte').textContent = moiFte.toFixed(2);
         document.getElementById('modHh').textContent = modHh.toLocaleString('es-CL', {minimumFractionDigits: 1, maximumFractionDigits: 1});
