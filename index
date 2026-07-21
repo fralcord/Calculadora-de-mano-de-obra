@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Mano de Obra - Proyectos de Inversión Pública</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #34495e; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { background-color: #3498db; color: white; padding: 12px; border: none; width: 100%; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #2980b9; }
+        .results { margin-top: 20px; background: #ecf0f1; padding: 15px; border-radius: 5px; }
+        .result-row { display: flex; justify-content: space-between; border-bottom: 1px solid #bdc3c7; padding: 8px 0; }
+        .result-row.total { font-weight: bold; color: #2c3e50; border-bottom: none; font-size: 1.1em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Estimador de Mano de Obra (Dipres)</h2>
+    
+    <div class="form-group">
+        <label for="costo">Costo Total de Inversión (CLP):</label>
+        <input type="number" id="costo" placeholder="Ej: 300000000">
+    </div>
+
+    <div class="form-group">
+        <label for="meses">Plazo de Ejecución (Meses):</label>
+        <input type="number" id="meses" placeholder="Ej: 7">
+    </div>
+
+    <div class="form-group">
+        <label for="zona">Zona Geográfica:</label>
+        <select id="zona">
+            <option value="1.00">Zona Central (Factor 1.00)</option>
+            <option value="0.85" selected>Zona Sur (Factor 0.85)</option>
+            <option value="0.75">Zona Austral (Factor 0.75)</option>
+            <option value="0.90">Norte Grande / Chico (Factor 0.90)</option>
+        </select>
+    </div>
+
+    <button onclick="calcularMO()">Calcular Indicadores</button>
+
+    <div class="results" id="resultados" style="display:none;">
+        <h3 style="margin-top: 0; color: #2c3e50;">Resultados del Cálculo</h3>
+        <div class="result-row">
+            <span>MOD (Directa - FTE):</span>
+            <span id="modFte">0.00</span>
+        </div>
+        <div class="result-row">
+            <span>MOI (Indirecta - FTE):</span>
+            <span id="moiFte">0.00</span>
+        </div>
+        <div class="result-row">
+            <span>Esfuerzo MOD (HH):</span>
+            <span id="modHh">0.0</span>
+        </div>
+        <div class="result-row">
+            <span>Esfuerzo MOI (HH):</span>
+            <span id="moiHh">0.0</span>
+        </div>
+        <div class="result-row total">
+            <span>TOTAL PERSONAL (FTE):</span>
+            <span id="totalFte" style="color: #27ae60;">0.00</span>
+        </div>
+        <div class="result-row total">
+            <span>TOTAL ESFUERZO (HH):</span>
+            <span id="totalHh" style="color: #27ae60;">0.0</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calcularMO() {
+        const costo = parseFloat(document.getElementById('costo').value);
+        const meses = parseFloat(document.getElementById('meses').value);
+        const factorZona = parseFloat(document.getElementById('zona').value);
+
+        if (isNaN(costo) || isNaN(meses) || costo <= 0 || meses <= 0) {
+            alert("Por favor, ingrese valores numéricos mayores a cero.");
+            return;
+        }
+
+        // Fórmulas metodológicas
+        const mmPesos = costo / 1000000;
+        const fteBase = (mmPesos * 0.4400) / meses;
+        const fteAjustado = fteBase / factorZona;
+        
+        const modFte = fteAjustado * 0.80;
+        const moiFte = fteAjustado * 0.20;
+        
+        const horasMes = 168;
+        const modHh = modFte * meses * horasMes;
+        const moiHh = moiFte * meses * horasMes;
+
+        // Mostrar resultados
+        document.getElementById('modFte').textContent = modFte.toFixed(2);
+        document.getElementById('moiFte').textContent = moiFte.toFixed(2);
+        document.getElementById('modHh').textContent = modHh.toLocaleString('es-CL', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+        document.getElementById('moiHh').textContent = moiHh.toLocaleString('es-CL', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+        document.getElementById('totalFte').textContent = (modFte + moiFte).toFixed(2);
+        document.getElementById('totalHh').textContent = (modHh + moiHh).toLocaleString('es-CL', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+
+        document.getElementById('resultados').style.display = 'block';
+    }
+</script>
+</body>
+</html>
